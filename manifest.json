@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub filter extension",
+  "version": "0.1",
+  "description": "",
+  "content_scripts": [
+    {
+      "js": [
+        "dist/content.js"
+      ],
+      "matches": [
+        "https://github.com/*/issues",
+        "https://github.com/*/pulls"
+      ]
+    }
+  ]
+}
