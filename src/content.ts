@@ -15,6 +15,7 @@ filter.id = filterName
 filter.append(summary, details)
 
 container.appendChild(filter)
+container.querySelector('#GitHubFilter-closeButton').setAttribute('data-toggle-for', filterName)
 
 function createSummary(): Element {
     const summary = document.createElement('summary')
@@ -37,7 +38,7 @@ function createModal(): Element {
 
     const header = node.querySelector('.SelectMenu-header').cloneNode(true) as Element
     header.querySelector('.SelectMenu-title').innerHTML = 'Filter by'
-    header.querySelector('.SelectMenu-closeButton').setAttribute('data-toggle-for', this.filterName)
+    header.querySelector('.SelectMenu-closeButton').id = 'GitHubFilter-closeButton'
 
     const body = document.createElement('div')
     body.setAttribute('class', 'SelectMenu-filter')
