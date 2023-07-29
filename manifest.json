@@ -9,8 +9,8 @@
         "dist/content.js"
       ],
       "matches": [
-        "https://github.com/*/issues",
-        "https://github.com/*/pulls"
+        "https://github.com/*/issues*",
+        "https://github.com/*/pulls*"
       ]
     }
   ]
