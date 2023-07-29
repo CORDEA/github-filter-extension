@@ -26,10 +26,13 @@ function createSummary(): Element {
     return summary
 }
 
-function createInput(): Element {
+function createInput(id: string, label: string): HTMLElement {
+    const container = document.createElement('div')
     const input = document.createElement('input')
     input.setAttribute('class', 'SelectMenu-input form-control')
-    return input
+    input.id = id
+    container.append(document.createTextNode(label), input)
+    return container
 }
 
 function createModal(): Element {
@@ -42,8 +45,9 @@ function createModal(): Element {
 
     const body = document.createElement('div')
     body.setAttribute('class', 'SelectMenu-filter')
-    const startInput = createInput()
-    const endInput = createInput()
+    const startInput = createInput('GitHubFilter-startDate', 'Start date (YYYY-MM-DD): ')
+    startInput.style.setProperty('margin-bottom', '16px')
+    const endInput = createInput('GitHubFilter-endDate', 'End date (YYYY-MM-DD): ')
     body.append(startInput, endInput)
 
     modal.append(header, body)
