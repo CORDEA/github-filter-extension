@@ -1,4 +1,5 @@
 const filterName = "date-select-menu";
+const filterValues = ["merged", "closed"];
 
 const node = document.querySelector("#author-select-menu");
 
@@ -42,22 +43,20 @@ function createItem(id: string, label: string): HTMLElement {
 
 function createModal(): Element {
   const current = input.value;
-  let defaultStart = "";
-  let defaultEnd = "";
-  let defaultMerged = "";
-  let defaultClosed = "";
-  const matches = current.match(RegExp("(merged|closed):([\\w.]+)"));
+  let defaultStart = "",
+    defaultEnd = "",
+    defaultValues: boolean[] = [];
+  const matches = current.match(
+    RegExp(`(${filterValues.join("|")}):([\\w.]+)`),
+  );
   if (matches?.length > 0) {
     const values = matches.pop().split("..");
     defaultStart = values[0];
     defaultEnd = values[1];
     const key = matches.pop();
-    if (key === "merged") {
-      defaultMerged = "true";
-    }
-    if (key === "closed") {
-      defaultClosed = "true";
-    }
+    filterValues.forEach((e) => {
+      defaultValues.push(key == e);
+    });
   }
 
   const modal = document.createElement("div");
@@ -72,11 +71,11 @@ function createModal(): Element {
 
   const list = document.createElement("div");
   list.setAttribute("class", "SelectMenu-list");
-  const closedItem = createItem("GitHubFilter-closed", "Closed");
-  closedItem.ariaChecked = defaultClosed;
-  const mergedItem = createItem("GitHubFilter-merged", "Merged");
-  mergedItem.ariaChecked = defaultMerged;
-  list.append(closedItem, mergedItem);
+  filterValues.forEach((e, i) => {
+    const item = createItem(`GitHubFilter-${e}`, e);
+    item.ariaChecked = String(defaultValues[i]);
+    list.appendChild(item);
+  });
 
   const divider = document.createElement("div");
   divider.append(document.createTextNode("Date (YYYY-MM-DD)"));
@@ -113,18 +112,9 @@ function updateFilter(key: string, value: string): boolean {
   return false;
 }
 
-function onChanged(
-  start: string,
-  end: string,
-  closed: boolean,
-  merged: boolean,
-) {
-  let key: string;
-  if (closed) {
-    key = "closed";
-  } else if (merged) {
-    key = "merged";
-  } else {
+function onChanged(start: string, end: string, index: number) {
+  const key = filterValues[index];
+  if (!key) {
     return;
   }
   let value: string;
@@ -143,50 +133,43 @@ function onChanged(
 }
 
 function observe() {
-  const closed = document.querySelector("#GitHubFilter-closed");
-  const merged = document.querySelector("#GitHubFilter-merged");
   const startDate: HTMLInputElement = document.querySelector(
     "#GitHubFilter-startDate",
   );
   const endDate: HTMLInputElement = document.querySelector(
     "#GitHubFilter-endDate",
   );
-  closed.addEventListener("click", (_) => {
-    const checked = closed.ariaChecked;
-    if (checked === "true") {
-      closed.ariaChecked = "false";
-      onChanged(startDate.value, endDate.value, false, false);
-      return;
-    }
-    closed.ariaChecked = "true";
-    merged.ariaChecked = "false";
-    onChanged(startDate.value, endDate.value, true, false);
-  });
-  merged.addEventListener("click", (_) => {
-    const checked = merged.ariaChecked;
-    if (checked === "true") {
-      merged.ariaChecked = "false";
-      onChanged(startDate.value, endDate.value, false, false);
-      return;
-    }
-    merged.ariaChecked = "true";
-    closed.ariaChecked = "false";
-    onChanged(startDate.value, endDate.value, false, true);
+  const elements = filterValues.map((e) =>
+    document.querySelector(`#GitHubFilter-${e}`),
+  );
+  elements.forEach((el) => {
+    el.addEventListener("click", (_) => {
+      const checked = el.ariaChecked;
+      if (checked === "true") {
+        el.ariaChecked = "false";
+        onChanged(startDate.value, endDate.value, -1);
+        return;
+      }
+      let idx = 0;
+      elements.forEach((e, i) => {
+        e.ariaChecked = String(e.id === el.id);
+        idx = i;
+      });
+      onChanged(startDate.value, endDate.value, idx);
+    });
   });
   startDate.addEventListener("change", (_) => {
     onChanged(
       startDate.value,
       endDate.value,
-      closed.ariaChecked === "true",
-      merged.ariaChecked === "true",
+      elements.findIndex((e) => e.ariaChecked === "true"),
     );
   });
   endDate.addEventListener("change", (_) => {
     onChanged(
       startDate.value,
       endDate.value,
-      closed.ariaChecked === "true",
-      merged.ariaChecked === "true",
+      elements.findIndex((e) => e.ariaChecked === "true"),
     );
   });
 }
