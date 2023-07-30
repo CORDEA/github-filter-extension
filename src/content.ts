@@ -14,12 +14,19 @@ function createSummary(): Element {
   return summary;
 }
 
-function createInput(id: string, label: string): HTMLElement {
+function createInput(
+  id: string,
+  label: string,
+  value: string | undefined,
+): HTMLElement {
   const container = document.createElement("div");
   const input = document.createElement("input");
   input.setAttribute("class", "SelectMenu-input form-control");
   input.type = "text";
   input.id = id;
+  if (value) {
+    input.value = value;
+  }
   container.append(document.createTextNode(label), input);
   return container;
 }
@@ -34,6 +41,25 @@ function createItem(id: string, label: string): HTMLElement {
 }
 
 function createModal(): Element {
+  const current = input.value;
+  let defaultStart = "";
+  let defaultEnd = "";
+  let defaultMerged = "";
+  let defaultClosed = "";
+  const matches = current.match(RegExp("(merged|closed):([\\w.]+)"));
+  if (matches?.length > 0) {
+    const values = matches.pop().split("..");
+    defaultStart = values[0];
+    defaultEnd = values[1];
+    const key = matches.pop();
+    if (key === "merged") {
+      defaultMerged = "true";
+    }
+    if (key === "closed") {
+      defaultClosed = "true";
+    }
+  }
+
   const modal = document.createElement("div");
   modal.setAttribute("class", "SelectMenu-modal");
 
@@ -46,9 +72,11 @@ function createModal(): Element {
 
   const list = document.createElement("div");
   list.setAttribute("class", "SelectMenu-list");
-  const closed = createItem("GitHubFilter-closed", "Closed");
-  const merged = createItem("GitHubFilter-merged", "Merged");
-  list.append(closed, merged);
+  const closedItem = createItem("GitHubFilter-closed", "Closed");
+  closedItem.ariaChecked = defaultClosed;
+  const mergedItem = createItem("GitHubFilter-merged", "Merged");
+  mergedItem.ariaChecked = defaultMerged;
+  list.append(closedItem, mergedItem);
 
   const divider = document.createElement("div");
   divider.append(document.createTextNode("Date (YYYY-MM-DD)"));
@@ -56,12 +84,18 @@ function createModal(): Element {
 
   const filter = document.createElement("div");
   filter.setAttribute("class", "SelectMenu-filter");
-  const startInput = createInput("GitHubFilter-startDate", "Start: ");
+  const startInput = createInput(
+    "GitHubFilter-startDate",
+    "Start: ",
+    defaultStart,
+  );
   startInput.style.setProperty("margin-bottom", "8px");
-  const endInput = createInput("GitHubFilter-endDate", "End: ");
+  const endInput = createInput("GitHubFilter-endDate", "End: ", defaultEnd);
+
   filter.append(startInput, endInput);
 
   modal.append(header, list, divider, filter);
+
   return modal;
 }
 
